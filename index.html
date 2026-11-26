@@ -1,6 +1,6 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>��� ᢠ����� ��졮�</title>
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Наш свадебный альбом</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#f4efe5;color:#322c28;font:17px/1.5 system-ui}main{max-width:510px;margin:8vh auto;padding:32px}header{border-top:2px solid #794357;padding:24px 0;color:#794357;font:italic 22px Georgia}h1{font:normal clamp(44px,9vw,68px)/1 Georgia;margin:10px 0 30px}label{display:block;margin:20px 0 8px}input,button{width:100%;padding:14px;font:inherit;border-radius:8px}input{border:1px solid #968d82;background:#fffdf7}button{margin-top:20px;background:#723f52;color:white;border:0;cursor:pointer}button:disabled{opacity:.55}progress{width:100%}p{overflow-wrap:anywhere}</style>
-<main><header>�������� ��졮�</header><h1>��� ����<br>��訬� �������</h1><form id="login"><label for="pin">��� � �ਣ��襭��</label><input id="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="6 ���"><button>������ ��졮�</button></form><form id="upload" hidden><label for="guest">��� ���</label><input id="guest" required maxlength="100" autocomplete="name"><label for="files">��� � �����</label><input id="files" type="file" accept="image/*,video/*,.heic,.heif" multiple required><button>��ࠢ���</button></form><p role="status" id="statusText"></p><progress hidden id="meter"></progress></main>
+<main><header>Свадебный альбом</header><h1>Наш день<br>вашими глазами</h1><form id="login"><label for="pin">Код с приглашения</label><input id="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="6 цифр"><button>Открыть альбом</button></form><form id="upload" hidden><label for="guest">Ваше имя</label><input id="guest" required maxlength="100" autocomplete="name"><label for="files">Фото и видео</label><input id="files" type="file" accept="image/*,video/*,.heic,.heif" multiple required><button>Отправить</button></form><p role="status" id="statusText"></p><progress hidden id="meter"></progress></main>
 <script src="config.js"></script><script>
 const api=window.ALBUM_SERVER||'', statusBox=document.querySelector('#statusText');
 let token=localStorage.albumToken||'', sent=new Set();
@@ -8,14 +8,13 @@ function screen(){login.hidden=!!token;upload.hidden=!token}
 screen();guest.value=localStorage.albumGuest||'';
 files.onchange=()=>sent.clear();
 login.onsubmit=async e=>{
- e.preventDefault();try{const r=await fetch(api+'/login',{method:'POST',body:pin.value});const msg=await r.text();if(!r.ok)throw Error(msg||'�஢���� ���');localStorage.albumToken=token=msg;screen();statusBox.textContent=''}catch(err){statusBox.textContent=err instanceof TypeError?'��� �裡 � ��졮���. ���஡�� �����.':err.message}
+ e.preventDefault();try{const r=await fetch(api+'/login',{method:'POST',body:pin.value});const msg=await r.text();if(!r.ok)throw Error(msg||'Проверьте код');localStorage.albumToken=token=msg;screen();statusBox.textContent=''}catch(err){statusBox.textContent=err instanceof TypeError?'Нет связи с альбомом. Попробуйте позже.':err.message}
 };
 function send(file){return new Promise((resolve,reject)=>{
  const x=new XMLHttpRequest();x.open('POST',api+'/upload');x.setRequestHeader('Authorization',token);x.setRequestHeader('X-Guest',encodeURIComponent(guest.value.trim()));x.setRequestHeader('X-Filename',encodeURIComponent(file.name));
  x.upload.onprogress=e=>{meter.max=file.size;meter.value=e.loaded};
- x.onload=()=>{if(x.status===401){localStorage.removeItem('albumToken');token='';screen()}x.status===201?resolve():reject(Error(x.responseText||'�� 㤠���� ��ࠢ��� 䠩�'))};x.onerror=()=>reject(Error('���� ��ࢠ����. ������ <��ࠢ���> ��� ࠧ.'));x.send(file)
+ x.onload=()=>{if(x.status===401){localStorage.removeItem('albumToken');token='';screen()}x.status===201?resolve():reject(Error(x.responseText||'Не удалось отправить файл'))};x.onerror=()=>reject(Error('Связь прервалась. Нажмите «Отправить» ещё раз.'));x.send(file)
 })}
 upload.onsubmit=async e=>{e.preventDefault();if(!guest.value.trim()){guest.focus();return}localStorage.albumGuest=guest.value.trim();const items=[...files.files];for(const field of upload.elements)field.disabled=true;
- try{meter.hidden=false;for(const file of items){if(sent.has(file))continue;meter.value=0;statusBox.textContent='��ࠢ�塞 '+(sent.size+1)+' �� '+items.length+' � '+file.name;await send(file);sent.add(file)}statusBox.textContent='���ᨡ�! ������ ��࠭���: '+sent.size;files.value='';sent.clear()}catch(err){statusBox.textContent=err.message}finally{meter.hidden=true;for(const field of upload.elements)field.disabled=false}}
+ try{meter.hidden=false;for(const file of items){if(sent.has(file))continue;meter.value=0;statusBox.textContent='Отправляем '+(sent.size+1)+' из '+items.length+' · '+file.name;await send(file);sent.add(file)}statusBox.textContent='Спасибо! Файлов сохранено: '+sent.size;files.value='';sent.clear()}catch(err){statusBox.textContent=err.message}finally{meter.hidden=true;for(const field of upload.elements)field.disabled=false}}
 </script></html>
-
