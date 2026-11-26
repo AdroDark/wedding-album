@@ -1,2 +1,4 @@
-window.ALBUM_SERVER = ""; // ��� GitHub Pages 㪠��� HTTPS-���� ��襣� �ࢥ� ��� �������饣� ᫥�.
-
+// The guest form and uploads share the same origin on the home server.
+if (location.hostname === "adrodark.github.io") {
+  location.replace("https://directive-animation-transmitted-anymore.trycloudflare.com/");
+}
